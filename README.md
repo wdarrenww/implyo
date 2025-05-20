@@ -118,3 +118,8 @@ df_random_imputed = random_imputer.fit_transform(df.copy())
 print("\nDataFrame after Random Sample Imputation (age):")
 print(df_random_imputed[['age']])
 
+```
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details 
+
