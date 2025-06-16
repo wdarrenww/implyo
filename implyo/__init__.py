@@ -1,3 +1,10 @@
+"""Implyo: Advanced Missing Value Imputation Library.
+
+This package provides a collection of advanced imputation algorithms for handling
+missing values in mixed-type data, with a focus on performance, accuracy, and
+uncertainty quantification.
+"""
+
 from .base_imputer import BaseImputer
 from .analysis import missing_handler, pattern_analyzer
 from .viz import missing_plots
@@ -23,10 +30,20 @@ from .imputers import (
     MedianImputer,
     ModeImputer,
     ConstantImputer,
-    RandomSampleImputer
+    RandomSampleImputer,
+    RandomForestImputer,
+    KNNImputer,
+    IterativeImputer,
+    XGBoostImputer,
+    LightGBMImputer,
 )
 
-__version__ = "0.1.0-alpha"
+from .uncertainty import (
+    pool_means,
+    pool_variances_rubin
+)
+
+__version__ = "0.1.0"
 
 __all__ = [
     'BaseImputer',
@@ -34,6 +51,7 @@ __all__ = [
     'pattern_analyzer',
     'identify_missing_values',
     'missing_value_summary',
+    'RandomForestImputer',
     'get_rows_with_missing_values',
     'get_columns_with_missing_values',
     'preliminary_mcar_test',
@@ -43,9 +61,15 @@ __all__ = [
     'plot_missingness_bar',
     'plot_missingness_summary_bar',
     'MeanImputer',
+    'IterativeImputer',
     'MedianImputer',
     'ModeImputer',
     'ConstantImputer',
     'RandomSampleImputer',
+    'KNNImputer',
+    'pool_means',
+    'pool_variances_rubin',
+    'XGBoostImputer',
+    'LightGBMImputer',
     '__version__'
 ]

@@ -1,125 +1,190 @@
-# Implyo: A Python Library for Advanced Data Imputation
+# Implyo: Advanced Missing Value Imputation Library
 
-Implyo is a Python library designed to provide a comprehensive suite of tools for understanding, analyzing, and imputing missing data in pandas DataFrames. It aims to offer both simple and advanced imputation techniques, along with robust missing data analysis and visualization capabilities.
-
-**Current Version: 0.1.0-alpha**
+Implyo is a powerful Python library for handling missing values in mixed-type data, with a focus on performance, accuracy, and uncertainty quantification. It provides a collection of advanced imputation algorithms that can handle both numeric and categorical variables efficiently.
 
 ## Features
 
-* **Core Imputation API:**
-    * Base imputer class (`BaseImputer`) following scikit-learn conventions (`fit`, `transform`, `fit_transform`).
-    * Seamless integration with pandas DataFrames.
-* **Simple Imputers:**
-    * `MeanImputer`: Imputes with column mean (for numeric data).
-    * `MedianImputer`: Imputes with column median (for numeric data).
-    * `ModeImputer`: Imputes with column mode (for numeric or categorical data).
-    * `ConstantImputer`: Imputes with a user-defined constant value.
-    * `RandomSampleImputer`: Imputes by randomly sampling from observed column values.
-* **Missing Data Analysis:**
-    * Identification of missing values.
-    * Summary statistics (count and percentage of missing values per column).
-    * Preliminary checks for missingness patterns (MCAR, MAR).
-* **Missing Data Visualization:**
-    * Missingness heatmaps (`msno.matrix`).
-    * Missingness bar plots (`msno.bar`).
-    * Summary bar plot of missing percentages.
+### Core Imputation Algorithms
+
+- **KNN Imputer**: Fast and efficient k-nearest neighbors imputation with support for mixed data types
+- **MICE (Iterative Imputer)**: Multiple Imputation by Chained Equations with various estimator options
+- **Random Forest Imputer**: Tree-based imputation with uncertainty quantification
+- **XGBoost Imputer**: Gradient boosting based imputation with advanced features
+- **LightGBM Imputer**: Light gradient boosting based imputation with high performance
+
+### Key Features
+
+- **Mixed Data Type Support**: Handle both numeric and categorical variables seamlessly
+- **Uncertainty Quantification**: Get prediction intervals for imputed values
+- **Parallel Processing**: Efficient handling of large datasets
+- **Early Stopping**: Automatic convergence detection
+- **Feature Importance**: Track which features are most important for imputation
+- **Missing Value Indicators**: Optional indicators for missing value patterns
+- **Comprehensive Testing**: Extensive test coverage for all imputers
+- **Benchmarking Tools**: Compare performance across different imputers
 
 ## Installation
 
-### Prerequisites
+```bash
+pip install implyo
+```
 
-* Python (>= 3.8 recommended)
-* pip
+For development installation:
 
-### Dependencies
+```bash
+git clone https://github.com/yourusername/implyo.git
+cd implyo
+pip install -e ".[dev]"
+```
 
-Implyo relies on the following libraries:
-
-* pandas
-* numpy
-* scikit-learn
-* matplotlib
-* seaborn
-* scipy
-* missingno
-
-These will be installed automatically if you install Implyo via pip (once packaged).
-
-### Local Installation (from source)
-
-1.  Clone the repository (or download the source code):
-    ```bash
-    git clone https://github.com/wdarrenww/implyo.git
-    cd implyo
-    ```
-2.  Install the package in editable mode (recommended for development):
-    ```bash
-    pip install -e .
-    ```
-    Alternatively, for a standard install:
-    ```bash
-    pip install .
-    ```
-
-## Getting Started
-
-Here's a quick example of how to use Implyo:
+## Quick Start
 
 ```python
 import pandas as pd
 import numpy as np
-import pip_impute as pipi
+from implyo import XGBoostImputer, LightGBMImputer, KNNImputer
 
-# 1. Create a sample DataFrame with missing values
-data = {
-    'age': [25, 30, np.nan, 45, 33, np.nan, 50],
-    'income': [50000, 60000, 75000, np.nan, 55000, 80000, 90000],
-    'gender': ['Male', 'Female', 'Female', np.nan, 'Male', 'Female', 'Male'],
-    'city': ['A', 'B', np.nan, 'A', 'C', np.nan, 'B']
-}
-df = pd.DataFrame(data)
-print("Original DataFrame:")
-print(df)
+# Create a sample dataset with missing values
+data = pd.DataFrame({
+    'numeric1': [1, 2, np.nan, 4, 5],
+    'numeric2': [1.1, np.nan, 3.3, 4.4, 5.5],
+    'categorical': ['a', 'b', 'c', np.nan, 'e']
+})
 
-# 2. Analyze missing data
-print("\nMissing Value Summary:")
-summary = pipi.missing_value_summary(df)
-print(summary)
+# Initialize and fit the imputer
+imputer = XGBoostImputer(
+    n_estimators=100,
+    categorical_features=['categorical'],
+    uncertainty_quantile=0.95,  # Get prediction intervals
+    random_state=42
+)
 
-# Visualize missingness (plots will open in new windows)
-# pipi.plot_missingness_heatmap(df)
-# pipi.plot_missingness_bar(df)
+# Fit and transform the data
+X_imputed = imputer.fit_transform(data)
 
-# 3. Impute missing values
-# Example: Mean imputation for numeric columns
-mean_imputer = pipi.MeanImputer()
-df_mean_imputed = mean_imputer.fit_transform(df.copy()) # Use .copy() to avoid modifying original df
-print("\nDataFrame after Mean Imputation:")
-print(df_mean_imputed)
-print("Fitted means:", mean_imputer.statistics_)
+# Get uncertainty intervals
+intervals = imputer.uncertainty_intervals_
 
-# Example: Mode imputation for 'gender' and 'city'
-mode_imputer = pipi.ModeImputer(columns=['gender', 'city'])
-# Make a fresh copy for this imputation step if df was already modified
-df_mode_imputed = mode_imputer.fit_transform(df.copy())
-print("\nDataFrame after Mode Imputation (gender, city):")
-print(df_mode_imputed[['gender', 'city']])
-print("Fitted modes:", mode_imputer.statistics_)
-
-# Example: Constant imputation for 'income'
-constant_imputer = pipi.ConstantImputer(fill_value=-1, columns=['income'])
-df_constant_imputed = constant_imputer.fit_transform(df.copy())
-print("\nDataFrame after Constant Imputation (income filled with -1):")
-print(df_constant_imputed[['income']])
-
-# Example: Random Sample Imputation for 'age'
-random_imputer = pipi.RandomSampleImputer(columns=['age'], random_state=42)
-df_random_imputed = random_imputer.fit_transform(df.copy())
-print("\nDataFrame after Random Sample Imputation (age):")
-print(df_random_imputed[['age']])
-
+# Get feature importances
+importances = imputer.feature_importances_
 ```
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details 
+## Advanced Usage
 
+### Uncertainty Quantification
+
+All tree-based imputers (Random Forest, XGBoost, LightGBM) support uncertainty quantification:
+
+```python
+from implyo import RandomForestImputer
+
+imputer = RandomForestImputer(
+    uncertainty_quantile=0.95,  # 95% prediction intervals
+    n_estimators=100,
+    random_state=42
+)
+
+X_imputed = imputer.fit_transform(data)
+intervals = imputer.uncertainty_intervals_
+
+# Access intervals for a specific column
+lower, upper = intervals['numeric1']
+```
+
+### Parallel Processing
+
+All imputers support parallel processing for faster computation:
+
+```python
+imputer = XGBoostImputer(
+    n_jobs=-1,  # Use all available cores
+    n_estimators=100,
+    random_state=42
+)
+```
+
+### Feature Importance
+
+Tree-based imputers provide feature importance information:
+
+```python
+imputer = LightGBMImputer(
+    n_estimators=100,
+    random_state=42
+)
+imputer.fit_transform(data)
+
+# Get feature importances for each imputed variable
+importances = imputer.feature_importances_
+```
+
+### Missing Value Indicators
+
+Add binary indicators for missing value patterns:
+
+```python
+imputer = KNNImputer(
+    add_indicator=True,  # Add missing value indicators
+    n_neighbors=5
+)
+X_imputed = imputer.fit_transform(data)
+```
+
+## Benchmarking
+
+The package includes comprehensive benchmarking tools to compare different imputers:
+
+```python
+from implyo.benchmarks import run_benchmark
+
+# Run benchmarks with different configurations
+results = run_benchmark(
+    n_samples=1000,
+    n_numeric_features=5,
+    n_categorical_features=3,
+    missing_ratio=0.2,
+    n_repeats=3
+)
+print(results)
+```
+
+## Performance
+
+Implyo's imputers are optimized for performance:
+
+- **KNN Imputer**: Faster than scikit-learn's implementation
+- **XGBoost Imputer**: Efficient handling of large datasets
+- **LightGBM Imputer**: High performance with low memory usage
+- **Random Forest Imputer**: Balanced performance and accuracy
+- **MICE**: Flexible and robust for complex missing patterns
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Citation
+
+If you use Implyo in your research, please cite:
+
+```bibtex
+@software{implyo2024,
+  author = {Darren Wei},
+  title = {Implyo: Advanced Missing Value Imputation Library},
+  year = {2024},
+  publisher = {GitHub},
+  url = {https://github.com/yourusername/implyo}
+}
+```
+
+## Roadmap
+
+- [ ] Add more advanced imputation algorithms
+- [ ] Support for time series data
+- [ ] Integration with deep learning models
+- [ ] Web-based visualization tools
+- [ ] Distributed computing support
+- [ ] GPU acceleration for large datasets
